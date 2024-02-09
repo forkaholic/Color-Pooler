@@ -1,5 +1,4 @@
 from PySide2 import QtWidgets as QtW
-from PySide2 import QtGui as QtG
 
 from sys import exit
 from View import View
@@ -9,7 +8,7 @@ class Controller:
         # Create app before anything else
         self.app = QtW.QApplication(argv)
         self.app.setApplicationName("Color Pooler")
-        self.app
+        # self.app
 
         self.rows = 10
         self.stitches = 10

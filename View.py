@@ -2,9 +2,7 @@ from PySide2 import QtWidgets as QtW
 from PySide2 import QtGui as QtG
 from PySide2 import QtCore as QtC
 
-import time
-import ColorWidgetGroup as CWG
-from LabelledBox import LabelledBox
+import CustomWidgets as CW
 
 class View(QtW.QWidget):
     def __init__(self, controller):
@@ -87,11 +85,11 @@ class View(QtW.QWidget):
         options = QtW.QWidget()
         optionsLayout = QtW.QHBoxLayout()
 
-        rows = LabelledBox("Rows in preview", 10, lambda x: self.controller.setRows(x))
+        rows = CW.LabelledBox("Rows in preview", 10, lambda x: self.controller.setRows(x))
 
-        stitches = LabelledBox("Stitches per row", 10, lambda x: self.controller.setStitches(x))
+        stitches = CW.LabelledBox("Stitches per row", 10, lambda x: self.controller.setStitches(x))
 
-        window = LabelledBox("Stitchs in preview", 10, lambda x: self.controller.setWindow(x))
+        window = CW.LabelledBox("Stitchs in preview", 10, lambda x: self.controller.setWindow(x))
 
         radioLayout = QtW.QVBoxLayout()
 
@@ -258,12 +256,12 @@ class View(QtW.QWidget):
         durations = []
         widgets = []
         for colors in values:
-            widgets += [CWG.ColorSample(colors[0], colors[1], colors[2])]
+            widgets += [CW.ColorSample(colors[0], colors[1], colors[2])]
             durations += [colors[3]]
         return (durations, widgets)
 
     def addColor(self):
-        self.cWGWidgets += [CWG.ColorWidgetGroup(self)]
+        self.cWGWidgets += [CW.ColorWidgetGroup(self)]
         self._scroll.addWidget(self.cWGWidgets[-1], stretch=0)
         self._scroll.setAlignment(self.cWGWidgets[-1], QtC.Qt.AlignTop)
 
@@ -272,5 +270,22 @@ class View(QtW.QWidget):
         for cWG in self.cWGWidgets:
             values += cWG.getValues()     
         return values
+
+    def upCWG(self, cwg):
+        index = self.cWGWidgets.index(cwg)
+        if index <= 0: return
+
+        swap = self.cWGWidgets[index-1]
+        self.cWGWidgets[index-1] = self.cWGWidgets[index]
+        self.cWGWidgets[index] = swap
+
+
+    def downCWG(self, cwg):
+        index = self.cWGWidgets.index(cwg)
+        if index >= len(self.cWGWidgets) - 1: return
+
+        swap = self.cWGWidgets[index + 1]
+        self.cWGWidgets[index+1] = self.cWGWidgets[index]
+        self.cWGWidgets[index] = swap
 
 ##############################

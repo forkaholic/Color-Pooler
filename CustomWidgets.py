@@ -1,10 +1,8 @@
 from PySide2 import QtWidgets as QtW
-from PySide2 import QtGui as QtG
 from PySide2 import QtCore as QtC
-from NumberTextBox import NumberTextBox as NTB
+from PySide2 import QtGui as QtG
 
 class ColorWidgetGroup(QtW.QWidget):
-    
     def __init__(self, controller, r=255, g=255, b=255, length=10):
         super().__init__()
         # True parent is VBox, setting it as View regardless
@@ -15,10 +13,10 @@ class ColorWidgetGroup(QtW.QWidget):
         self.setContentsMargins(0,5,0,5)
 
         self.textBoxes = [
-            NTB(self, r),   # R
-            NTB(self, g),   # G
-            NTB(self, b),   # B
-            NTB(self, length, top=1000)     # Count
+            NumberTextBox(self, r),   # R
+            NumberTextBox(self, g),   # G
+            NumberTextBox(self, b),   # B
+            NumberTextBox(self, length, top=1000)     # Count
             #,up button,
             #down button
         ]
@@ -29,12 +27,15 @@ class ColorWidgetGroup(QtW.QWidget):
         close.setFixedSize(20,20)
         close.clicked.connect(self.delete)
 
+        upDown = UpDownWidget(self)
+
         layout.addWidget(self.textBoxes[0])
         layout.addWidget(self.textBoxes[1])
         layout.addWidget(self.textBoxes[2])
         layout.addWidget(self.colorSample)
         layout.addWidget(self.textBoxes[3])
         layout.addWidget(close)
+        layout.addWidget(upDown)
 
         self.setLayout(layout)
 
@@ -51,6 +52,12 @@ class ColorWidgetGroup(QtW.QWidget):
         b = func(2)
         self.colorSample.setPalette(r, g, b)
         
+    def up(self):
+        self.controller.upCWG(self)
+
+    def down(self):
+        self.controller.downCWG(self)
+
     def delete(self):
         self.controller.cWGWidgets.remove(self)
         self.setParent(None)
@@ -59,6 +66,7 @@ class ColorSample(QtW.QWidget):
     def __init__(self, r=0, g=0, b=0, size=40):
         super(ColorSample, self).__init__()
         self.setMinimumSize(size, size)
+        self.setMaximumSize(size + 20, size + 20)
         self.setAutoFillBackground(True)
         self.setPalette(r, g, b)
 
@@ -75,3 +83,62 @@ class ColorSample(QtW.QWidget):
         r,g,b,_ = self.palette().color(QtG.QPalette.Window).getRgb()
         cs.setPalette(r,g,b)
         return cs
+    
+class LabelledBox(QtW.QWidget):
+    def __init__(self, labelText, value, func):
+        super().__init__()
+
+        self.func = func
+
+        layout = QtW.QVBoxLayout()
+        label = QtW.QLabel(labelText)
+        label.setMinimumWidth(125)
+        self.text = NumberTextBox(value=value, bottom=1)
+        label.setFont(self.text.font().setPointSize(5))
+
+        layout.addWidget(label)
+        layout.addWidget(self.text)
+
+        self.setLayout(layout)
+
+    def update(self):
+        self.func(self.text.getValueAsInt())
+
+class NumberTextBox(QtW.QLineEdit):
+
+    def __init__(self, parent=None, value=0, bottom=0, top=255):
+        super().__init__(str(value), parent)
+        self.setFixedSize(40,40)
+        self.textChanged.connect(self.apply)
+        self.setValidator(QtG.QIntValidator(bottom, top))
+
+    def apply(self):
+        self.parent().update()
+
+    def getValueAsInt(self):
+        val = 0
+        if self.text().isnumeric(): 
+            val = int(self.text())
+        return val
+    
+class UpDownWidget(QtW.QWidget):
+    def __init__(self, controller):
+        super().__init__()
+        self.controller = controller
+        layout = QtW.QVBoxLayout()
+        up = QtW.QPushButton("▲")
+        down = QtW.QPushButton("▼")
+        
+        up.clicked.connect(self.up)
+        down.clicked.connect(self.down)
+
+        layout.addWidget(up)
+        layout.addWidget(down)
+
+        self.setLayout(layout)
+
+    def up(self):
+        self.controller.up()
+
+    def down(self):
+        self.controller.down()
