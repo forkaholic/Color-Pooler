@@ -30,6 +30,7 @@ class Controller:
 
     def applyButtonPressed(self):
         self.view.clearGrid()
+        if len(self.view.cWGWidgets) == 0: return
         values = self.view.getValues()
         self.window = self.rows if self.rows < self.window else self.window
         self.view.setGrid(values, self.rows, self.stitches, self.mode, self.window)        
