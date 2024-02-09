@@ -25,11 +25,16 @@ class ColorWidgetGroup(QtW.QWidget):
         
         self.colorSample = ColorSample(r, g, b)
 
+        close = QtW.QPushButton("X")
+        close.setFixedSize(20,20)
+        close.clicked.connect(self.delete)
+
         layout.addWidget(self.textBoxes[0])
         layout.addWidget(self.textBoxes[1])
         layout.addWidget(self.textBoxes[2])
         layout.addWidget(self.colorSample)
         layout.addWidget(self.textBoxes[3])
+        layout.addWidget(close)
 
         self.setLayout(layout)
 
@@ -46,6 +51,10 @@ class ColorWidgetGroup(QtW.QWidget):
         b = func(2)
         self.colorSample.setPalette(r, g, b)
         
+    def delete(self):
+        self.controller.cWGWidgets.remove(self)
+        self.setParent(None)
+
 class ColorSample(QtW.QWidget):
     def __init__(self, r=0, g=0, b=0, size=40):
         super(ColorSample, self).__init__()
