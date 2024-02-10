@@ -17,11 +17,10 @@ class ColorWidgetGroup(QtW.QWidget):
             NumberTextBox(self, g),   # G
             NumberTextBox(self, b),   # B
             NumberTextBox(self, length, top=1000)     # Count
-            #,up button,
-            #down button
         ]
         
         self.colorSample = ColorSample(r, g, b)
+        self.colorSample.setFixedSize(40,40)
 
         close = QtW.QPushButton("X")
         close.setFixedSize(20,20)
@@ -65,8 +64,7 @@ class ColorWidgetGroup(QtW.QWidget):
 class ColorSample(QtW.QWidget):
     def __init__(self, r=0, g=0, b=0, size=40):
         super(ColorSample, self).__init__()
-        self.setMinimumSize(size, size)
-        self.setMaximumSize(size + 20, size + 20)
+        self.setGeometry(QtC.QRect(0,0,size,size))
         self.setAutoFillBackground(True)
         self.setPalette(r, g, b)
 
