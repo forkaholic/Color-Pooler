@@ -9,7 +9,8 @@ class ColorWidgetGroup(QtW.QWidget):
         self.controller = controller
         
         layout = QtW.QHBoxLayout()
-        self.setGeometry(QtC.QRect(0,0,350,100))
+        
+        self.setGeometry(0,0,350,50)
         self.setContentsMargins(0,5,0,5)
 
         self.textBoxes = [
@@ -35,7 +36,7 @@ class ColorWidgetGroup(QtW.QWidget):
         layout.addWidget(self.textBoxes[3])
         layout.addWidget(close)
         layout.addWidget(upDown)
-
+        
         self.setLayout(layout)
 
     def __len__(self):
@@ -94,6 +95,8 @@ class LabelledBox(QtW.QWidget):
         self.text = NumberTextBox(value=value, bottom=1)
         label.setFont(self.text.font().setPointSize(5))
 
+
+
         layout.addWidget(label)
         layout.addWidget(self.text)
 
@@ -101,6 +104,28 @@ class LabelledBox(QtW.QWidget):
 
     def update(self):
         self.func(self.text.getValueAsInt())
+
+
+class AdjustableLabelBox(QtW.QWidget):
+    def __init__(self, text, value, func):
+        super().__init__()
+
+        layout = QtW.QHBoxLayout()
+
+        self.lb = LabelledBox(text, value, func)
+
+        ud = UpDownWidget(self)
+
+        layout.addWidget(self.lb)
+        layout.addWidget(ud)
+
+        self.setLayout(layout)
+
+    def up(self):
+        self.lb.text.setText(str(int(self.lb.text.text()) + 1))
+
+    def down(self):
+        self.lb.text.setText(str(int(self.lb.text.text()) - 1))
 
 class NumberTextBox(QtW.QLineEdit):
 
@@ -118,7 +143,7 @@ class NumberTextBox(QtW.QLineEdit):
         if self.text().isnumeric(): 
             val = int(self.text())
         return val
-    
+
 class UpDownWidget(QtW.QWidget):
     def __init__(self, controller):
         super().__init__()
