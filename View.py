@@ -78,11 +78,12 @@ class View(QtW.QWidget):
     
     def _createOptions(self):
         options = QtW.QWidget()
+        options.setFixedSize(400,150)
         optionsLayout = QtW.QHBoxLayout()
 
-        stitches = CW.LabelledBox("Stitches per row", 10, lambda x: self.controller.setStitches(x))
+        stitches = CW.AdjustableLabelBox("Stitches", 10, lambda x: self.controller.setStitches(x))
 
-        window = CW.LabelledBox("Stitchs in preview", 10, lambda x: self.controller.setWindow(x))
+        window = CW.AdjustableLabelBox("Preview", 10, lambda x: self.controller.setWindow(x))
 
         radioLayout = QtW.QVBoxLayout()
 
