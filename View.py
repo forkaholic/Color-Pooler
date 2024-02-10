@@ -2,9 +2,7 @@ from PySide2 import QtWidgets as QtW
 from PySide2 import QtGui as QtG
 from PySide2 import QtCore as QtC
 
-import time
-import ColorWidgetGroup as CWG
-from LabelledBox import LabelledBox
+import CustomWidgets as CW
 
 class View(QtW.QWidget):
     def __init__(self, controller):
@@ -75,23 +73,16 @@ class View(QtW.QWidget):
         grid = self.createGrid()
 
         self.leftSide.setLayout(grid)
-
-        leftScroll = QtW.QScrollArea()
-        leftScroll.setFixedSize(800,800)
-        # leftScroll.setWidgetResizable(True)   
-        leftScroll.setWidget(self.leftSide)
-
-        return leftScroll
+        
+        return self.leftSide
     
     def _createOptions(self):
         options = QtW.QWidget()
         optionsLayout = QtW.QHBoxLayout()
 
-        rows = LabelledBox("Rows in preview", 10, lambda x: self.controller.setRows(x))
+        stitches = CW.LabelledBox("Stitches per row", 10, lambda x: self.controller.setStitches(x))
 
-        stitches = LabelledBox("Stitches per row", 10, lambda x: self.controller.setStitches(x))
-
-        window = LabelledBox("Stitchs in preview", 10, lambda x: self.controller.setWindow(x))
+        window = CW.LabelledBox("Stitchs in preview", 10, lambda x: self.controller.setWindow(x))
 
         radioLayout = QtW.QVBoxLayout()
 
@@ -107,7 +98,6 @@ class View(QtW.QWidget):
         radioWidget = QtW.QWidget()
         radioWidget.setLayout(radioLayout)
 
-        optionsLayout.addWidget(rows)
         optionsLayout.addWidget(stitches)
         optionsLayout.addWidget(window)
         optionsLayout.addWidget(radioWidget)
@@ -138,9 +128,9 @@ class View(QtW.QWidget):
     
     def _createScroll(self):
         # Widget that contans CWG
-        scrollWidget = QtW.QWidget()
+        self.scrollWidget = QtW.QWidget()
         # scrollWidget.setGeometry(QtC.QRect(0,0,400,600))
-        scrollWidget.setFixedWidth(400)
+        self.scrollWidget.setFixedWidth(400)
 
         # Signify that scrollWidget has scroll bar
         scrollArea = QtW.QScrollArea()
@@ -148,11 +138,11 @@ class View(QtW.QWidget):
         scrollArea.setFixedWidth(400)
         scrollArea.setHorizontalScrollBarPolicy(QtC.Qt.ScrollBarAlwaysOff)
         scrollArea.setWidgetResizable(True)   
-        scrollArea.setWidget(scrollWidget)
+        scrollArea.setWidget(self.scrollWidget)
 
         # Scroll layout for colors
         # Layout for scrollable widget
-        self._scroll = QtW.QVBoxLayout(scrollWidget)
+        self._scroll = QtW.QVBoxLayout(self.scrollWidget)
         return scrollArea
 
 ##############################
@@ -161,16 +151,16 @@ class View(QtW.QWidget):
 
     # mode = 0 is flat, 1 is circular
     # Assuming window is less than stitches
-    def setGrid(self, colors, rows, stitches, mode, window):
+    def setGrid(self, colors, stitches, mode, window):
         durations, widgets = self._createGridWidgets(colors)
-        values = self._allocateGrid(durations, rows, stitches, mode, window)
+        values = self._allocateGrid(durations, stitches, mode, window)
         
         for row in range(len(values)):
             for col in range(len(values[0])):
                 self.grid().addWidget(widgets[values[row][col]].copy(),row,col)
 
 
-    def _allocateGrid(self, durations, rows, stitches, mode, window):        
+    def _allocateGrid(self, durations, stitches, mode, window):        
         modifier = True if mode == 0 else False
 
         def colorGenerator(durations):
@@ -224,7 +214,7 @@ class View(QtW.QWidget):
 
         grid = [[]]
 
-        for currentStitch in range(rows * stitches):
+        for currentStitch in range(window * stitches):
             # Get color of current stitch
             color = next(currentColor)
 
@@ -257,13 +247,14 @@ class View(QtW.QWidget):
     def _createGridWidgets(self, values):
         durations = []
         widgets = []
+        size = int(800 / (self.controller.window))
         for colors in values:
-            widgets += [CWG.ColorSample(colors[0], colors[1], colors[2])]
+            widgets += [CW.ColorSample(colors[0], colors[1], colors[2], size)]
             durations += [colors[3]]
         return (durations, widgets)
 
     def addColor(self):
-        self.cWGWidgets += [CWG.ColorWidgetGroup(self)]
+        self.cWGWidgets += [CW.ColorWidgetGroup(self)]
         self._scroll.addWidget(self.cWGWidgets[-1], stretch=0)
         self._scroll.setAlignment(self.cWGWidgets[-1], QtC.Qt.AlignTop)
 
@@ -272,5 +263,30 @@ class View(QtW.QWidget):
         for cWG in self.cWGWidgets:
             values += cWG.getValues()     
         return values
+
+    def _resetCWG(self):
+        for child in self.cWGWidgets:
+            self._scroll.removeWidget(child)
+            child.setParent(None)
+
+        for child in self.cWGWidgets:
+            self._scroll.addWidget(child)
+
+    def upCWG(self, cwg):
+        index = self.cWGWidgets.index(cwg)
+        if index <= 0: return
+
+        self.cWGWidgets[index-1], self.cWGWidgets[index] = self.cWGWidgets[index], self.cWGWidgets[index-1]
+
+        self._resetCWG()
+
+
+    def downCWG(self, cwg):
+        index = self.cWGWidgets.index(cwg)
+        if index >= len(self.cWGWidgets) - 1: return
+
+        self.cWGWidgets[index+1], self.cWGWidgets[index] = self.cWGWidgets[index], self.cWGWidgets[index+1]
+
+        self._resetCWG()        
 
 ##############################
