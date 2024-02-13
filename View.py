@@ -81,9 +81,9 @@ class View(QtW.QWidget):
         options.setFixedSize(400,150)
         optionsLayout = QtW.QHBoxLayout()
 
-        stitches = CW.AdjustableLabelBox("Stitches", 10, lambda x: self.controller.setStitches(x))
+        stitches = CW.AdjustableLabelBox("Stitches", 10, lambda x: self.controller.setStitches(x), lambda: self.apply())
 
-        window = CW.AdjustableLabelBox("Preview", 10, lambda x: self.controller.setWindow(x))
+        window = CW.AdjustableLabelBox("Preview", 10, lambda x: self.controller.setWindow(x), lambda: self.apply())
 
         radioLayout = QtW.QVBoxLayout()
 
@@ -264,6 +264,9 @@ class View(QtW.QWidget):
         for cWG in self.cWGWidgets:
             values += cWG.getValues()     
         return values
+
+    def apply(self):
+        self.controller.applyButtonPressed()
 
     def _resetCWG(self):
         for child in self.cWGWidgets:

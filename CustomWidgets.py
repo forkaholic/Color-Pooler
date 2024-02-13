@@ -62,6 +62,9 @@ class ColorWidgetGroup(QtW.QWidget):
         self.controller.cWGWidgets.remove(self)
         self.setParent(None)
 
+    def apply(self):
+        self.controller.apply()
+
 class ColorSample(QtW.QWidget):
     def __init__(self, r=0, g=0, b=0, size=40):
         super(ColorSample, self).__init__()
@@ -84,10 +87,11 @@ class ColorSample(QtW.QWidget):
         return cs
     
 class LabelledBox(QtW.QWidget):
-    def __init__(self, labelText, value, func):
+    def __init__(self, labelText, value, updateValueFunc, applyFunc):
         super().__init__()
 
-        self.func = func
+        self.updateValueFunc = updateValueFunc
+        self.applyFunc = applyFunc
 
         layout = QtW.QVBoxLayout()
         label = QtW.QLabel(labelText)
@@ -95,24 +99,25 @@ class LabelledBox(QtW.QWidget):
         self.text = NumberTextBox(value=value, bottom=1)
         label.setFont(self.text.font().setPointSize(5))
 
-
-
         layout.addWidget(label)
         layout.addWidget(self.text)
 
         self.setLayout(layout)
 
+    def apply(self):
+        self.applyFunc()
+
     def update(self):
-        self.func(self.text.getValueAsInt())
+        self.updateValueFunc(self.text.getValueAsInt())
 
 
 class AdjustableLabelBox(QtW.QWidget):
-    def __init__(self, text, value, func):
+    def __init__(self, text, value, func, applyFunc):
         super().__init__()
 
         layout = QtW.QHBoxLayout()
 
-        self.lb = LabelledBox(text, value, func)
+        self.lb = LabelledBox(text, value, func, applyFunc)
 
         ud = UpDownWidget(self)
 
@@ -132,10 +137,14 @@ class NumberTextBox(QtW.QLineEdit):
     def __init__(self, parent=None, value=0, bottom=0, top=255):
         super().__init__(str(value), parent)
         self.setFixedSize(40,40)
-        self.textChanged.connect(self.apply)
+        self.textChanged.connect(self.updateColor)
         self.setValidator(QtG.QIntValidator(bottom, top))
+        self.returnPressed.connect(self.apply)
 
     def apply(self):
+        self.parent().apply()
+
+    def updateColor(self):
         self.parent().update()
 
     def getValueAsInt(self):
